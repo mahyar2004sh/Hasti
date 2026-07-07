@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HASTI - My Favorite Star</title>
+
+    <!-- Google Fonts: Playfair Display for elegant typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #020812;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            /* Dynamic viewport height for mobile */
+            overflow: hidden;
+            background: var(--bg-deep);
+            font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+            cursor: default;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            position: relative;
+        }
+
+        /* ---- Canvas: full-screen starfield ---- */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: block;
+        }
+
+        /* ---- Vignette overlay for cinematic feel ---- */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            background: radial-gradient(ellipse at center,
+                    transparent 55%,
+                    rgba(2, 4, 16, 0.35) 75%,
+                    rgba(2, 4, 16, 0.7) 100%);
+        }
+
+        /* ---- Text overlay container ---- */
+        .text-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            pointer-events: none;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: opacity, transform;
+        }
+
+        .text-overlay.visible {
+            opacity: 1;
+        }
+
+        /* ---- Main heading "HASTI" ---- */
+        .main-title {
+            font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+            font-weight: 600;
+            font-size: clamp(3.5rem, 12vw, 9rem);
+            letter-spacing: 0.08em;
+            color: #fffef8;
+            line-height: 1;
+            margin: 0;
+            /* Multi-layered golden glow */
+            text-shadow:
+                0 0 12px rgba(255, 220, 140, 0.9),
+                0 0 28px rgba(255, 200, 100, 0.7),
+                0 0 50px rgba(255, 180, 60, 0.5),
+                0 0 80px rgba(255, 160, 40, 0.35),
+                0 0 130px rgba(255, 150, 30, 0.2),
+                0 0 200px rgba(200, 160, 255, 0.15),
+                0 2px 4px rgba(0, 0, 0, 0.6);
+            animation: gentlePulse 4s ease-in-out infinite;
+            animation-delay: 6s;
+            /* Start pulsing after fade-in */;
+        }
+
+        @keyframes gentlePulse {
+            0%,
+            100% {
+                text-shadow:
+                    0 0 12px rgba(255, 220, 140, 0.9),
+                    0 0 28px rgba(255, 200, 100, 0.7),
+                    0 0 50px rgba(255, 180, 60, 0.5),
+                    0 0 80px rgba(255, 160, 40, 0.35),
+                    0 0 130px rgba(255, 150, 30, 0.2),
+                    0 0 200px rgba(200, 160, 255, 0.15),
+                    0 2px 4px rgba(0, 0, 0, 0.6);
+            }
+            50% {
+                text-shadow:
+                    0 0 18px rgba(255, 230, 160, 1),
+                    0 0 38px rgba(255, 210, 120, 0.85),
+                    0 0 62px rgba(255, 190, 70, 0.6),
+                    0 0 100px rgba(255, 170, 50, 0.45),
+                    0 0 155px rgba(255, 155, 40, 0.28),
+                    0 0 230px rgba(210, 170, 255, 0.2),
+                    0 2px 4px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        /* ---- Subtitle ---- */
+        .subtitle {
+            font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+            font-weight: 400;
+            font-style: italic;
+            font-size: clamp(1rem, 3.5vw, 2rem);
+            letter-spacing: 0.05em;
+            color: #e8e0d4;
+            margin-top: 0.3em;
+            text-shadow:
+                0 0 6px rgba(255, 210, 150, 0.7),
+                0 0 18px rgba(255, 180, 100, 0.4),
+                0 0 35px rgba(255, 150, 60, 0.25),
+                0 1px 3px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition-delay: 0.6s;
+            /* Slight delay after main title */;
+        }
+
+        .text-overlay.visible .subtitle {
+            opacity: 1;
+        }
+
+        /* ---- Responsive adjustments ---- */
+        @media (max-width: 600px) {
+            .main-title {
+                font-size: clamp(2.8rem, 14vw, 5rem);
+                letter-spacing: 0.05em;
+            }
+            .subtitle {
+                font-size: clamp(0.85rem, 4vw, 1.3rem);
+                margin-top: 0.2em;
+            }
+            .vignette {
+                background: radial-gradient(ellipse at center,
+                        transparent 45%,
+                        rgba(2, 4, 16, 0.4) 68%,
+                        rgba(2, 4, 16, 0.75) 100%);
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .main-title {
+                font-size: 10rem;
+                letter-spacing: 0.1em;
+            }
+            .subtitle {
+                font-size: 2.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The starfield canvas -->
+    <canvas id="starfield" aria-hidden="true"></canvas>
+
+    <!-- Cinematic vignette -->
+    <div class="vignette" aria-hidden="true"></div>
+
+    <!-- Text overlay: fades in after stars settle -->
+    <div class="text-overlay" id="textOverlay">
+        <h1 class="main-title">HASTI</h1>
+        <p class="subtitle">My Favorite Star</p>
+    </div>
+
+    <script>
+        (function() {
+            // ─────────────────────────────────────
+            // DOM ELEMENTS
+            // ─────────────────────────────────────
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            const textOverlay = document.getElementById('textOverlay');
+
+            // ─────────────────────────────────────
+            // STATE & CONFIGURATION
+            // ─────────────────────────────────────
+            let width, height, centerX, centerY;
+            let dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap DPR for performance
+            let isMobile = false;
+            let mouseX = 0.5; // Normalized mouse X (0–1)
+            let mouseY = 0.5; // Normalized mouse Y (0–1)
+            let targetMouseX = 0.5;
+            let targetMouseY = 0.5;
+            let animationTime = 0; // Elapsed seconds
+            let flyInStarted = false;
+            let textRevealed = false;
+            const FLY_IN_START_DELAY = 1.8; // Seconds before fly-in begins
+            const TEXT_REVEAL_TIME = 6.0; // Seconds when text overlay fades in
+
+            // ─────────────────────────────────────
+            // BACKGROUND STARS (twinkling field)
+            // ─────────────────────────────────────
+            const BG_STAR_COUNT_DESKTOP = 320;
+            const BG_STAR_COUNT_MOBILE = 160;
+            let bgStars = [];
+
+            // ─────────────────────────────────────
+            // SHOOTING STARS
+            // ─────────────────────────────────────
+            let shootingStars = [];
+            let shootingStarTimer = 0;
+            const SHOOTING_STAR_INTERVAL_MIN = 3.5;
+            const SHOOTING_STAR_INTERVAL_MAX = 9.0;
+            let nextShootingStarTime = 0;
+
+            // ─────────────────────────────────────
+            // FORMATION STARS (fly in to form "HASTI")
+            // ─────────────────────────────────────
+            let formationStars = [];
+            let formationTargets = []; // Target positions for formation stars
+
+            // ─────────────────────────────────────
+            // OFFSCREEN CANVAS FOR NEBULA
+            // ─────────────────────────────────────
+            let nebulaCanvas = null;
+            let nebulaCtx = null;
+
+            // ─────────────────────────────────────
+            // GLOW SPRITE FOR FORMATION STARS
+            // ─────────────────────────────────────
+            let glowSprite = null;
+
+            // ─────────────────────────────────────
+            // RESIZE HANDLER
+            // ─────────────────────────────────────
+            function resize() {
+                dpr = Math.min(window.devicePixelRatio || 1, 2);
+                width = window.innerWidth;
+                height = window.innerHeight;
+                isMobile = width < 768;
+
+                // Set canvas size accounting for DPR
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+                ctx.scale(dpr, dpr);
+
+                centerX = width / 2;
+                centerY = height / 2;
+
+                // Regenerate nebula
+                generateNebula();
+
+                // Regenerate glow sprite
+                generateGlowSprite();
+
+                // Regenerate background stars
+                generateBgStars();
+
+                // Recompute formation targets
+                computeFormationTargets();
+
+                // If formation stars exist, update their targets
+                if (formationStars.length > 0 && formationTargets.length > 0) {
+                    for (let i = 0; i < formationStars.length; i++) {
+                        if (i < formationTargets.length) {
+                            formationStars[i].targetX = formationTargets[i].x;
+                            formationStars[i].targetY = formationTargets[i].y;
+                        }
+                    }
+                }
+
+                // Reset next shooting star time
+                nextShootingStarTime = animationTime + randomRange(1.5, 4.0);
+            }
+
+            // ─────────────────────────────────────
+            // NEBULA GENERATION (offscreen canvas)
+            // ─────────────────────────────────────
+            function generateNebula() {
+                if (!nebulaCanvas) {
+                    nebulaCanvas = document.createElement('canvas');
+                    nebulaCtx = nebulaCanvas.getContext('2d');
+                }
+                nebulaCanvas.width = width * dpr;
+                nebulaCanvas.height = height * dpr;
+                nebulaCtx.setTransform(1, 0, 0, 1, 0, 0);
+                nebulaCtx.scale(dpr, dpr);
+
+                // Fill with deep space color
+                nebulaCtx.fillStyle = '#020812';
+                nebulaCtx.fillRect(0, 0, width, height);
+
+                // Paint soft nebula blobs
+                const blobs = [
+                    { x: 0.25, y: 0.35, r: 0.45, color: 'rgba(30, 10, 50, 0.12)' }, // Purple
+                    { x: 0.72, y: 0.28, r: 0.38, color: 'rgba(15, 20, 55, 0.14)' }, // Deep blue
+                    { x: 0.50, y: 0.55, r: 0.50, color: 'rgba(20, 15, 45, 0.10)' }, // Mixed
+                    { x: 0.35, y: 0.65, r: 0.35, color: 'rgba(10, 25, 40, 0.11)' }, // Teal-blue
+                    { x: 0.60, y: 0.70, r: 0.40, color: 'rgba(35, 12, 40, 0.09)' }, // Soft magenta
+                    { x: 0.80, y: 0.50, r: 0.30, color: 'rgba(18, 22, 50, 0.13)' }, // Blue
+                    { x: 0.15, y: 0.48, r: 0.32, color: 'rgba(25, 8, 38, 0.10)' }, // Deep purple
+                ];
+
+                blobs.forEach(blob => {
+                    const bx = blob.x * width;
+                    const by = blob.y * height;
+                    const br = blob.r * Math.max(width, height);
+                    const gradient = nebulaCtx.createRadialGradient(bx, by, br * 0.08, bx, by, br);
+                    gradient.addColorStop(0, blob.color);
+                    gradient.addColorStop(0.4, blob.color.replace(/[\d.]+\)$/, `${parseFloat(blob.color.match(/[\d.]+\)$/)[0]) * 0.6})`));
+                    gradient.addColorStop(0.7, 'rgba(2, 4, 16, 0.02)');
+                    gradient.addColorStop(1, 'rgba(2, 4, 16, 0)');
+                    nebulaCtx.fillStyle = gradient;
+                    nebulaCtx.fillRect(0, 0, width, height);
+                });
+
+                // Add very subtle brighter spots (star cluster hints)
+                const clusters = [
+                    { x: 0.40, y: 0.30, r: 0.08, color: 'rgba(180, 160, 220, 0.04)' },
+                    { x: 0.65, y: 0.45, r: 0.06, color: 'rgba(160, 180, 220, 0.03)' },
+                    { x: 0.30, y: 0.55, r: 0.07, color: 'rgba(200, 170, 210, 0.035)' },
+                ];
+                clusters.forEach(cluster => {
+                    const cx = cluster.x * width;
+                    const cy = cluster.y * height;
+                    const cr = cluster.r * Math.max(width, height);
+                    const grad = nebulaCtx.createRadialGradient(cx, cy, 0, cx, cy, cr);
+                    grad.addColorStop(0, cluster.color);
+                    grad.addColorStop(1, 'rgba(0,0,0,0)');
+                    nebulaCtx.fillStyle = grad;
+                    nebulaCtx.fillRect(0, 0, width, height);
+                });
+            }
+
+            // ─────────────────────────────────────
+            // GLOW SPRITE FOR FORMATION STARS
+            // ─────────────────────────────────────
+            function generateGlowSprite() {
+                const spriteSize = 64;
+                glowSprite = document.createElement('canvas');
+                glowSprite.width = spriteSize;
+                glowSprite.height = spriteSize;
+                const gCtx = glowSprite.getContext('2d');
+                const half = spriteSize / 2;
+                const gradient = gCtx.createRadialGradient(half, half, 0, half, half, half);
+                gradient.addColorStop(0, 'rgba(255, 245, 220, 1)');
+                gradient.addColorStop(0.03, 'rgba(255, 240, 210, 0.95)');
+                gradient.addColorStop(0.1, 'rgba(255, 220, 170, 0.7)');
+                gradient.addColorStop(0.25, 'rgba(255, 190, 120, 0.35)');
+                gradient.addColorStop(0.5, 'rgba(255, 150, 80, 0.08)');
+                gradient.addColorStop(0.75, 'rgba(200, 120, 60, 0.01)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                gCtx.fillStyle = gradient;
+                gCtx.fillRect(0, 0, spriteSize, spriteSize);
+            }
+
+            // ─────────────────────────────────────
+            // BACKGROUND STARS GENERATION
+            // ─────────────────────────────────────
+            function generateBgStars() {
+                const count = isMobile ? BG_STAR_COUNT_MOBILE : BG_STAR_COUNT_DESKTOP;
+                bgStars = [];
+                for (let i = 0; i < count; i++) {
+                    bgStars.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: randomRange(0.35, 2.2),
+                        brightness: randomRange(0.3, 1.0),
+                        twinkleSpeed: randomRange(0.6, 3.5),
+                        twinklePhase: randomRange(0, Math.PI * 2),
+                        twinkleAmp: randomRange(0.15, 0.7),
+                        colorTint: Math.random() < 0.15 ?
+                            `hsl(${randomRange(30, 50)}, ${randomRange(20, 60)}%, ${randomRange(75, 95)}%)` :
+                            'white', // Some stars have warm tint
+                    });
+                }
+                // Sort by radius so smaller stars render first (depth illusion)
+                bgStars.sort((a, b) => a.radius - b.radius);
+            }
+
+            // ─────────────────────────────────────
+            // LETTER PATH DEFINITIONS (normalized)
+            // Each letter is defined in a 1 × 1.4 box
+            // Returns array of {x, y} points along strokes
+            // ─────────────────────────────────────
+            function getLetterPath(letter) {
+                const paths = [];
+                // Each entry: [x1, y1, x2, y2] line segment (normalized)
+                switch (letter) {
+                    case 'H':
+                        // Left vertical
+                        paths.push([0.12, 0.07, 0.12, 1.33]);
+                        // Right vertical
+                        paths.push([0.88, 0.07, 0.88, 1.33]);
+                        // Crossbar
+                        paths.push([0.12, 0.70, 0.88, 0.70]);
+                        break;
+                    case 'A':
+                        // Left diagonal (bottom-left to top-center)
+                        paths.push([0.12, 1.33, 0.50, 0.07]);
+                        // Right diagonal (top-center to bottom-right)
+                        paths.push([0.50, 0.07, 0.88, 1.33]);
+                        // Crossbar
+                        paths.push([0.22, 0.76, 0.78, 0.76]);
+                        break;
+                    case 'S':
+                        // Approximated smooth S-curve using polyline segments
+                        const sPoints = [
+                            [0.84, 0.09],
+                            [0.55, 0.06],
+                            [0.28, 0.10],
+                            [0.14, 0.21],
+                            [0.10, 0.36],
+                            [0.16, 0.50],
+                            [0.32, 0.56],
+                            [0.52, 0.58],
+                            [0.68, 0.56],
+                            [0.80, 0.62],
+                            [0.86, 0.75],
+                            [0.84, 0.90],
+                            [0.72, 1.04],
+                            [0.48, 1.10],
+                            [0.26, 1.16],
+                            [0.16, 1.28],
+                            [0.14, 1.33],
+                        ];
+                        for (let i = 0; i < sPoints.length - 1; i++) {
+                            paths.push([sPoints[i][0], sPoints[i][1], sPoints[i + 1][0], sPoints[i + 1][1]]);
+                        }
+                        break;
+                    case 'T':
+                        // Top bar
+                        paths.push([0.04, 0.07, 0.96, 0.07]);
+                        // Stem
+                        paths.push([0.50, 0.07, 0.50, 1.33]);
+                        break;
+                    case 'I':
+                        // Top serif
+                        paths.push([0.18, 0.07, 0.82, 0.07]);
+                        // Stem
+                        paths.push([0.50, 0.07, 0.50, 1.33]);
+                        // Bottom serif
+                        paths.push([0.18, 1.33, 0.82, 1.33]);
+                        break;
+                    default:
+                        break;
+                }
+                return paths;
+            }
+
+            // Sample points along a line segment at given interval
+            function sampleLineSegment(x1, y1, x2, y2, interval) {
+                const points = [];
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const steps = Math.max(2, Math.ceil(dist / interval));
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    points.push({ x: x1 + dx * t, y: y1 + dy * t });
+                }
+                return points;
+            }
+
+            // ─────────────────────────────────────
+            // COMPUTE FORMATION TARGET POSITIONS
+            // ─────────────────────────────────────
+            function computeFormationTargets() {
+                formationTargets = [];
+                const letters = ['H', 'A', 'S', 'T', 'I'];
+                const letterBoxWidthNormalized = 1.0;
+                const letterBoxHeightNormalized = 1.4;
+                const spacingNormalized = 0.22; // Gap between letter boxes
+
+                // Total normalized width of "HASTI" including spacing
+                const totalNormWidth = letters.length * letterBoxWidthNormalized + (letters.length - 1) *
+                spacingNormalized;
+
+                // Scale to fit 65% of canvas width on desktop, 78% on mobile
+                const targetWidthRatio = isMobile ? 0.78 : 0.65;
+                const scale = (width * targetWidthRatio) / totalNormWidth;
+                const letterBoxWidth = letterBoxWidthNormalized * scale;
+                const letterBoxHeight = letterBoxHeightNormalized * scale;
+                const spacing = spacingNormalized * scale;
+
+                // Starting X (left edge of first letter box)
+                const totalWidth = letters.length * letterBoxWidth + (letters.length - 1) * spacing;
+                const startX = centerX - totalWidth / 2;
+                const startY = centerY - letterBoxHeight / 2;
+
+                const sampleInterval = isMobile ? 0.045 : 0.028; // Denser sampling on desktop
+
+                letters.forEach((letter, letterIndex) => {
+                    const letterOriginX = startX + letterIndex * (letterBoxWidth + spacing);
+                    const letterOriginY = startY;
+                    const segments = getLetterPath(letter);
+
+                    const letterPoints = [];
+                    segments.forEach(([x1, y1, x2, y2]) => {
+                        const sampled = sampleLineSegment(x1, y1, x2, y2, sampleInterval);
+                        sampled.forEach(p => {
+                            letterPoints.push({
+                                x: letterOriginX + p.x * letterBoxWidth,
+                                y: letterOriginY + p.y * letterBoxHeight,
+                            });
+                        });
+                    });
+
+                    // Deduplicate nearby points
+                    const deduped = [];
+                    const minDist = sampleInterval * scale * 0.7;
+                    letterPoints.forEach(p => {
+                        let tooClose = false;
+                        for (let i = deduped.length - 1; i >= Math.max(0, deduped.length - 8); i--) {
+                            const dx = p.x - deduped[i].x;
+                            const dy = p.y - deduped[i].y;
+                            if (Math.sqrt(dx * dx + dy * dy) < minDist) {
+                                tooClose = true;
+                                break;
+                            }
+                        }
+                        if (!tooClose) deduped.push(p);
+                    });
+
+                    formationTargets.push(...deduped);
+                });
+            }
+
+            // ─────────────────────────────────────
+            // CREATE FORMATION STARS
+            // ─────────────────────────────────────
+            function createFormationStars() {
+                formationStars = [];
+                if (formationTargets.length === 0) return;
+
+                formationTargets.forEach((target, index) => {
+                    // Start position: scattered in a wide elliptical area
+                    const scatterAngle = Math.random() * Math.PI * 2;
+                    const scatterDist = randomRange(Math.max(width, height) * 0.35, Math.max(width, height) * 0.9);
+                    const startX = centerX + Math.cos(scatterAngle) * scatterDist;
+                    const startY = centerY + Math.sin(scatterAngle) * scatterDist * 0.7;
+
+                    formationStars.push({
+                        startX: startX,
+                        startY: startY,
+                        targetX: target.x,
+                        targetY: target.y,
+                        currentX: startX,
+                        currentY: startY,
+                        delay: randomRange(0, 1.6), // Staggered start within fly-in window
+                        flyDuration: randomRange(1.6, 2.6),
+                        size: randomRange(1.6, 4.5),
+                        brightness: randomRange(0.6, 1.0),
+                        wobbleAmp: randomRange(1.2, 4.5),
+                        wobbleFreq: randomRange(1.8, 3.8),
+                        wobblePhase: randomRange(0, Math.PI * 2),
+                        wobbleDecay: randomRange(0.6, 1.3),
+                        shimmerSpeed: randomRange(1.5, 4.0),
+                        shimmerPhase: randomRange(0, Math.PI * 2),
+                        hasArrived: false,
+                        arrivalTime: -1,
+                    });
+                });
+            }
+
+            // ─────────────────────────────────────
+            // SHOOTING STAR SPAWNER
+            // ─────────────────────────────────────
+            function spawnShootingStar() {
+                // Choose a random edge starting point
+                const edge = Math.floor(Math.random() * 4); // 0:top, 1:right, 2:bottom, 3:left
+                let sx, sy;
+                const margin = 40;
+                switch (edge) {
+                    case 0:
+                        sx = randomRange(margin, width - margin);
+                        sy = -margin;
+                        break;
+                    case 1:
+                        sx = width + margin;
+                        sy = randomRange(margin, height * 0.6);
+                        break;
+                    case 2:
+                        sx = randomRange(margin, width - margin);
+                        sy = height + margin;
+                        break;
+                    case 3:
+                        sx = -margin;
+                        sy = randomRange(margin, height * 0.6);
+                        break;
+                }
+
+                // Direction: generally diagonal, downward-leaning
+                const angle = randomRange(Math.PI * 0.35, Math.PI * 0.65) + (Math.random() < 0.5 ? 0 : Math.PI);
+                const speed = randomRange(600, 1400);
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                const life = randomRange(0.55, 1.3);
+
+                shootingStars.push({
+                    x: sx,
+                    y: sy,
+                    vx: vx,
+                    vy: vy,
+                    life: life,
+                    maxLife: life,
+                    trail: [],
+                    trailLength: Math.floor(randomRange(16, 32)),
+                });
+            }
+
+            // ─────────────────────────────────────
+            // EASING FUNCTION (ease-out cubic)
+            // ─────────────────────────────────────
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
+            }
+
+            // ─────────────────────────────────────
+            // UTILITY: Random range
+            // ─────────────────────────────────────
+            function randomRange(min, max) {
+                return min + Math.random() * (max - min);
+            }
+
+            // ─────────────────────────────────────
+            // UPDATE FUNCTIONS
+            // ─────────────────────────────────────
+            function updateBgStars(dt) {
+                // Background stars just twinkle; no positional update needed
+                // Twinkling is handled during rendering via brightness calculation
+            }
+
+            function updateFormationStars(dt, time) {
+                const flyInStartTime = FLY_IN_START_DELAY;
+
+                formationStars.forEach(star => {
+                    const starStartTime = flyInStartTime + star.delay;
+                    if (time < starStartTime) {
+                        // Not yet started: stay at start position
+                        star.currentX = star.startX;
+                        star.currentY = star.startY;
+                        star.hasArrived = false;
+                        return;
+                    }
+
+                    const elapsed = time - starStartTime;
+                    const progress = Math.min(elapsed / star.flyDuration, 1.0);
+                    const easedProgress = easeOutCubic(progress);
+
+                    // Interpolate position
+                    star.currentX = star.startX + (star.targetX - star.startX) * easedProgress;
+                    star.currentY = star.startY + (star.targetY - star.startY) * easedProgress;
+
+                    if (progress >= 1.0 && !star.hasArrived) {
+                        star.hasArrived = true;
+                        star.arrivalTime = time;
+                    }
+
+                    // Apply wobble after arrival
+                    if (star.hasArrived) {
+                        const wobbleElapsed = time - star.arrivalTime;
+                        const decay = Math.exp(-wobbleElapsed / star.wobbleDecay);
+                        const wobbleX = Math.sin(wobbleElapsed * star.wobbleFreq * Math.PI * 2 + star.wobblePhase) *
+                            star.wobbleAmp * decay;
+                        const wobbleY = Math.cos(wobbleElapsed * star.wobbleFreq * Math.PI * 2 + star.wobblePhase + 1.3) *
+                            star.wobbleAmp * decay * 0.7;
+                        star.currentX += wobbleX;
+                        star.currentY += wobbleY;
+                    }
+                });
+            }
+
+            function updateShootingStars(dt, time) {
+                // Update existing shooting stars
+                for (let i = shootingStars.length - 1; i >= 0; i--) {
+                    const ss = shootingStars[i];
+                    ss.life -= dt;
+                    if (ss.life <= 0) {
+                        shootingStars.splice(i, 1);
+                        continue;
+                    }
+                    // Add current position to trail
+                    ss.trail.push({ x: ss.x, y: ss.y, life: ss.life / ss.maxLife });
+                    // Limit trail length
+                    if (ss.trail.length > ss.trailLength) {
+                        ss.trail.shift();
+                    }
+                    // Move
+                    ss.x += ss.vx * dt;
+                    ss.y += ss.vy * dt;
+                    // Slight deceleration
+                    ss.vx *= 0.998;
+                    ss.vy *= 0.998;
+                }
+
+                // Spawn new shooting stars
+                if (time >= nextShootingStarTime) {
+                    spawnShootingStar();
+                    nextShootingStarTime = time + randomRange(SHOOTING_STAR_INTERVAL_MIN, SHOOTING_STAR_INTERVAL_MAX);
+                }
+            }
+
+            // ─────────────────────────────────────
+            // RENDER FUNCTIONS
+            // ─────────────────────────────────────
+            function renderNebula() {
+                if (nebulaCanvas) {
+                    ctx.drawImage(nebulaCanvas, 0, 0, width, height);
+                }
+            }
+
+            function renderBgStars(time) {
+                bgStars.forEach(star => {
+                    // Calculate twinkling brightness
+                    const twinkle = Math.sin(time * star.twinkleSpeed + star.twinklePhase) * star.twinkleAmp;
+                    const alpha = Math.max(0.15, star.brightness + twinkle);
+                    const size = star.radius * (0.85 + Math.abs(twinkle) * 0.5);
+
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, size, 0, Math.PI * 2);
+                    if (star.colorTint !== 'white') {
+                        ctx.fillStyle = star.colorTint.replace(/[\d.]+%\)$/, `${alpha * 100}%)`);
+                    } else {
+                        ctx.fillStyle = `rgba(220, 225, 245, ${alpha})`;
+                    }
+                    ctx.fill();
+
+                    // Occasional bright sparkle for larger stars
+                    if (size > 1.5 && twinkle > star.twinkleAmp * 0.7) {
+                        ctx.beginPath();
+                        ctx.arc(star.x, star.y, size * 2.2, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(255, 240, 220, ${alpha * 0.18})`;
+                        ctx.fill();
+                    }
+                });
+            }
+
+            function renderFormationStars(time) {
+                formationStars.forEach(star => {
+                    // Calculate shimmer brightness
+                    const shimmer = Math.sin(time * star.shimmerSpeed + star.shimmerPhase) * 0.3;
+                    const alpha = Math.max(0.5, star.brightness + shimmer);
+                    const size = star.size;
+
+                    // Draw glow sprite
+                    const glowSize = size * 8;
+                    if (glowSprite && glowSize > 2) {
+                        ctx.save();
+                        ctx.globalAlpha = alpha * 0.85;
+                        ctx.drawImage(
+                            glowSprite,
+                            star.currentX - glowSize / 2,
+                            star.currentY - glowSize / 2,
+                            glowSize,
+                            glowSize
+                        );
+                        ctx.restore();
+                    }
+
+                    // Draw bright core
+                    ctx.beginPath();
+                    ctx.arc(star.currentX, star.currentY, size * 0.55, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 248, 230, ${Math.min(1, alpha + 0.15)})`;
+                    ctx.fill();
+
+                    // Inner ultra-bright point
+                    ctx.beginPath();
+                    ctx.arc(star.currentX, star.currentY, size * 0.2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 250, ${Math.min(1, alpha + 0.3)})`;
+                    ctx.fill();
+                });
+            }
+
+            function renderShootingStars() {
+                shootingStars.forEach(ss => {
+                    const lifeRatio = ss.life / ss.maxLife;
+                    const headAlpha = Math.min(1, lifeRatio * 2);
+
+                    // Draw trail
+                    if (ss.trail.length > 1) {
+                        for (let i = 1; i < ss.trail.length; i++) {
+                            const t = ss.trail[i];
+                            const tPrev = ss.trail[i - 1];
+                            const trailAlpha = (i / ss.trail.length) * headAlpha * 0.7;
+
+                            ctx.beginPath();
+                            ctx.moveTo(tPrev.x, tPrev.y);
+                            ctx.lineTo(t.x, t.y);
+                            ctx.strokeStyle = `rgba(200, 220, 255, ${trailAlpha})`;
+                            ctx.lineWidth = 1.2 + (i / ss.trail.length) * 2.5;
+                            ctx.lineCap = 'round';
+                            ctx.stroke();
+                        }
+                    }
+
+                    // Draw head
+                    const headGlowSize = 5 + (1 - lifeRatio) * 3;
+                    const headGradient = ctx.createRadialGradient(ss.x, ss.y, 0, ss.x, ss.y, headGlowSize);
+                    headGradient.addColorStop(0, `rgba(255, 255, 255, ${headAlpha})`);
+                    headGradient.addColorStop(0.3, `rgba(220, 230, 255, ${headAlpha * 0.8})`);
+                    headGradient.addColorStop(1, 'rgba(180, 200, 255, 0)');
+                    ctx.fillStyle = headGradient;
+                    ctx.beginPath();
+                    ctx.arc(ss.x, ss.y, headGlowSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Bright core dot
+                    ctx.beginPath();
+                    ctx.arc(ss.x, ss.y, 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${headAlpha})`;
+                    ctx.fill();
+                });
+            }
+
+            // ─────────────────────────────────────
+            // MAIN ANIMATION LOOP
+            // ─────────────────────────────────────
+            let lastTime = performance.now();
+            let frameCount = 0;
+
+            function animate(timestamp) {
+                // Calculate delta time (capped to avoid jumps)
+                let dt = (timestamp - lastTime) / 1000;
+                if (dt <= 0) dt = 0.016;
+                if (dt > 0.15) dt = 0.15; // Cap to prevent large jumps
+                lastTime = timestamp;
+                animationTime += dt;
+                frameCount++;
+
+                // Smooth mouse follow (lerp)
+                mouseX += (targetMouseX - mouseX) * Math.min(dt * 4.5, 1);
+                mouseY += (targetMouseY - mouseY) * Math.min(dt * 4.5, 1);
+
+                // Parallax offset (subtle)
+                const parallaxX = (mouseX - 0.5) * 18;
+                const parallaxY = (mouseY - 0.5) * 14;
+
+                // Clear canvas
+                ctx.clearRect(0, 0, width, height);
+
+                // Apply subtle parallax shift to entire scene
+                ctx.save();
+                ctx.translate(parallaxX * 0.4, parallaxY * 0.4);
+
+                // Render nebula background
+                renderNebula();
+
+                // Update & render background stars
+                updateBgStars(dt);
+                renderBgStars(animationTime);
+
+                // Update & render shooting stars
+                updateShootingStars(dt, animationTime);
+                renderShootingStars();
+
+                // Update & render formation stars
+                updateFormationStars(dt, animationTime);
+                renderFormationStars(animationTime);
+
+                ctx.restore();
+
+                // Apply parallax to text overlay
+                if (textOverlay.classList.contains('visible')) {
+                    textOverlay.style.transform =
+                        `translate(calc(-50% + ${parallaxX * 0.55}px), calc(-50% + ${parallaxY * 0.55}px))`;
+                }
+
+                // Trigger text reveal
+                if (!textRevealed && animationTime >= TEXT_REVEAL_TIME) {
+                    textRevealed = true;
+                    textOverlay.classList.add('visible');
+                }
+
+                // Trigger fly-in
+                if (!flyInStarted && animationTime >= FLY_IN_START_DELAY) {
+                    flyInStarted = true;
+                    // Formation stars are already created; they start animating based on their delays
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            // ─────────────────────────────────────
+            // EVENT LISTENERS
+            // ─────────────────────────────────────
+            function onMouseMove(e) {
+                targetMouseX = e.clientX / width;
+                targetMouseY = e.clientY / height;
+            }
+
+            function onTouchMove(e) {
+                if (e.touches.length > 0) {
+                    targetMouseX = e.touches[0].clientX / width;
+                    targetMouseY = e.touches[0].clientY / height;
+                }
+            }
+
+            function onResize() {
+                resize();
+                // Recreate formation stars with updated targets
+                if (formationTargets.length > 0) {
+                    createFormationStars();
+                }
+            }
+
+            // Throttled resize
+            let resizeTimeout;
+            function onResizeThrottled() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(onResize, 250);
+            }
+
+            window.addEventListener('mousemove', onMouseMove, { passive: true });
+            window.addEventListener('touchmove', onTouchMove, { passive: true });
+            window.addEventListener('resize', onResizeThrottled);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(onResize, 400);
+            });
+
+            // ─────────────────────────────────────
+            // INITIALIZATION
+            // ─────────────────────────────────────
+            function init() {
+                resize();
+                generateNebula();
+                generateGlowSprite();
+                generateBgStars();
+                computeFormationTargets();
+                createFormationStars();
+
+                // Set initial shooting star timer
+                nextShootingStarTime = FLY_IN_START_DELAY + randomRange(0.8, 2.5);
+
+                // Start animation loop
+                lastTime = performance.now();
+                animationTime = 0;
+                requestAnimationFrame(animate);
+            }
+
+            // ─────────────────────────────────────
+            // START
+            // ─────────────────────────────────────
+            init();
+
+            // ─────────────────────────────────────
+            // LOG
+            // ─────────────────────────────────────
+            console.log('%c✨ HASTI - My Favorite Star %c🌙',
+                'font-size:1.4em;color:#ffd700;font-family:serif;',
+                'font-size:1em;color:#c0c0e0;');
+            console.log('%cA dreamy night sky made with love.%c',
+                'color:#aaaacc;font-style:italic;',
+                '');
+            console.log(
+                `%c${formationTargets.length} stars will form her name...%c`,
+                'color:#e8d090;',
+                ''
+            );
+        })();
+    </script>
+</body>
+</html>
