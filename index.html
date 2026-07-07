@@ -1,316 +1,512 @@
-
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💌 برای دختر کوچولوی من</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Little Girl 🤍</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400&display=swap');
 
-<!-- جایگزین این قسمت با کد قبلی -->
+        :root {
+            --navy: #0a1428;
+            --deep-navy: #050a1a;
+            --soft-white: #f8f9ff;
+            --silver: #c0c8e0;
+            --gold: #e8c080;
+        }
 
-<style>
-html,body{
-margin:0;
-height:100%;
-overflow-x:hidden;
-font-family:tahoma;
-color:white;
-background:#020617;
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            color: var(--soft-white);
+            background: var(--deep-navy);
+            overflow-x: hidden;
+            height: 100vh;
+            position: relative;
+        }
 
-/* آسمان شب */
-body{
-background:
-radial-gradient(circle at 20% 20%, #1e3a8a 0%, transparent 35%),
-radial-gradient(circle at 80% 10%, #312e81 0%, transparent 30%),
-linear-gradient(to bottom,#020617,#07152d,#0f172a,#000);
-}
+        .background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
 
-/* ستاره‌ها */
-.stars{
-position:fixed;
-width:100%;
-height:100%;
-top:0;
-left:0;
-pointer-events:none;
-overflow:hidden;
-}
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-.star{
-position:absolute;
-width:2px;
-height:2px;
-background:white;
-border-radius:50%;
-animation:twinkle 2s infinite alternate;
-box-shadow:0 0 8px white;
-}
+        .content {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
 
-@keyframes twinkle{
-0%{
-opacity:.2;
-transform:scale(.8);
-}
-100%{
-opacity:1;
-transform:scale(1.8);
-}
-}
+        .intro {
+            opacity: 0;
+            transition: opacity 2s ease;
+            max-width: 800px;
+        }
+        .intro.visible { opacity: 1; }
 
-/* شهاب */
-.shooting{
-position:fixed;
-width:2px;
-height:2px;
-background:white;
-border-radius:50%;
-box-shadow:0 0 12px white;
-animation:shoot 6s linear infinite;
-}
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 40px rgba(232, 192, 128, 0.6);
+        }
 
-.shooting::after{
-content:"";
-position:absolute;
-width:120px;
-height:2px;
-background:linear-gradient(to right,white,transparent);
-transform:rotate(0deg);
-transform-origin:left;
-}
+        .subtitle {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            margin-bottom: 3rem;
+            color: var(--silver);
+            min-height: 2.5em;
+            font-weight: 300;
+        }
 
-@keyframes shoot{
-0%{
-left:-10%;
-top:10%;
-opacity:0;
-}
-10%{
-opacity:1;
-}
-40%{
-left:110%;
-top:55%;
-opacity:0;
-}
-100%{
-opacity:0;
-}
-}
+        .open-btn {
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 0 30px rgba(232, 192, 128, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            overflow: hidden;
+            position: relative;
+        }
 
-/* ماه */
-.moon{
-position:fixed;
-right:60px;
-top:50px;
-width:90px;
-height:90px;
-border-radius:50%;
-background:#fffbe8;
-box-shadow:
-0 0 20px #fff,
-0 0 60px #fff;
-}
-</style>
+        .open-btn:hover {
+            background: var(--gold);
+            color: var(--deep-navy);
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(232, 192, 128, 0.8);
+        }
 
-<div class="stars" id="stars"></div>
-<div class="moon"></div>
-<div class="shooting"></div>
+        .letters-section {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            margin: 4rem auto;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
-<script>
+        .card {
+            background: rgba(10, 20, 40, 0.65);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(192, 200, 224, 0.2);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            min-height: 320px;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+            position: relative;
+        }
 
-/* ساخت 250 ستاره */
-const stars=document.getElementById("stars");
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-for(let i=0;i<250;i++){
+        .card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--gold);
+        }
 
-const star=document.createElement("div");
+        .card p {
+            line-height: 1.8;
+            color: var(--silver);
+            font-size: 1.1rem;
+        }
 
-star.className="star";
+        .final-section {
+            display: none;
+            width: 100%;
+            max-width: 700px;
+            margin-top: 6rem;
+            text-align: center;
+        }
 
-star.style.left=Math.random()*100+"%";
+        .final-btn {
+            background: linear-gradient(135deg, #e8c080, #d4a017);
+            color: #050a1a;
+            border: none;
+            padding: 1.2rem 4rem;
+            font-size: 1.4rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 0 60px rgba(232, 192, 128, 0.7);
+            transition: all 0.5s ease;
+        }
 
-star.style.top=Math.random()*100+"%";
+        .final-btn:hover {
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 0 0 80px rgba(232, 192, 128, 0.9);
+        }
 
-star.style.animationDuration=(1+Math.random()*4)+"s";
+        .message {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            line-height: 2;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
 
-star.style.animationDelay=Math.random()*3+"s";
+        .moon {
+            position: absolute;
+            top: 12%;
+            right: 10%;
+            width: 130px;
+            height: 130px;
+            background: radial-gradient(circle at 38% 38%, #fff, #ddd 35%, #a0b0d0);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 80px #fff,
+                0 0 180px rgba(255, 240, 180, 0.7),
+                inset 35px 35px 45px rgba(255,255,255,0.9);
+            cursor: pointer;
+            z-index: 3;
+            transition: all 0.4s ease;
+        }
 
-star.style.opacity=Math.random();
+        .moon:hover { transform: scale(1.12); }
 
-stars.appendChild(star);
+        .heart {
+            position: absolute;
+            font-size: 1.9rem;
+            color: #ff6b9d;
+            text-shadow: 0 0 15px #ff6b9d;
+            animation: floatHeart 8s linear forwards;
+            pointer-events: none;
+            z-index: 4;
+        }
 
-}
+        @keyframes floatHeart {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0.9; }
+            100% { transform: translateY(-150px) rotate(30deg); opacity: 0; }
+        }
 
-</script>
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 10, 26, 0.96);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
 
-h1{
-text-align:center;
-margin:25px 0;
-font-size:32px;
-animation:fade 2s;
-}
+        .modal-content {
+            background: rgba(10, 20, 40, 0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(232, 192, 128, 0.5);
+            padding: 3rem 2.5rem;
+            border-radius: 30px;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 0 100px rgba(232, 192, 128, 0.5);
+        }
 
-p.intro{
-text-align:center;
-margin-bottom:30px;
-font-size:18px;
-}
-
-details{
-background:white;
-margin:15px auto;
-max-width:700px;
-padding:18px;
-border-radius:18px;
-box-shadow:0 8px 20px rgba(0,0,0,.08);
-transition:.3s;
-}
-
-details:hover{
-transform:scale(1.02);
-}
-
-summary{
-cursor:pointer;
-font-size:20px;
-font-weight:bold;
-outline:none;
-}
-
-.detailsText{
-margin-top:15px;
-line-height:2;
-font-size:18px;
-}
-
-button{
-display:block;
-margin:40px auto;
-padding:15px 30px;
-font-size:18px;
-border:none;
-border-radius:40px;
-background:#ff5f9e;
-color:white;
-cursor:pointer;
-transition:.3s;
-}
-
-button:hover{
-transform:scale(1.08);
-}
-
-#final{
-text-align:center;
-font-size:28px;
-margin-top:30px;
-display:none;
-animation:fade 2s;
-}
-
-.heart{
-position:fixed;
-top:-20px;
-font-size:22px;
-animation:fall linear infinite;
-pointer-events:none;
-}
-
-@keyframes fall{
-to{
-transform:translateY(110vh);
-}
-}
-
-@keyframes fade{
-from{opacity:0}
-to{opacity:1}
-}
-</style>
+        .cursor-trail {
+            position: fixed;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(232,192,128,0.65) 10%, transparent 70%);
+            pointer-events: none;
+            z-index: 999;
+            mix-blend-mode: screen;
+            opacity: 0;
+            transition: all 0.08s ease;
+        }
+    </style>
 </head>
-
 <body>
+    <div class="background">
+        <canvas id="stars"></canvas>
+    </div>
 
-<h1>💌 برای دختر کوچولوی قشنگم</h1>
+    <div id="moon" class="moon"></div>
 
-<p class="intro">
-یه خواهش...<br>
-هر بخش رو آروم باز کن. 🤍
-</p>
+    <div class="content">
+        <!-- Intro -->
+        <div class="intro" id="intro">
+            <h1>For My Little Girl 🤍</h1>
+            <p class="subtitle" id="typing-text"></p>
+            <button class="open-btn" id="open-btn">Open My Heart ❤️</button>
+        </div>
 
-<details>
-<summary>🌸 اول اینو بخون</summary>
-<div class="detailsText">
-از بین میلیاردها آدم روی این کره‌ی خاکی،
-اینکه تو وارد زندگی من شدی،
-برای من اتفاق کوچیکی نیست...
-ممنونم که هستی.
-</div>
-</details>
+        <!-- Letters -->
+        <div class="letters-section" id="letters-section">
+            <div class="card" id="card1">
+                <h2>Read this first</h2>
+                <p>Out of billions of people, somehow our paths crossed.</p>
+                <p style="margin-top:1.4rem">Meeting you is one of the most beautiful things that has ever happened to me.</p>
+                <p style="margin-top:1.4rem">Thank you for being part of my life.</p>
+            </div>
+            <div class="card" id="card2">
+                <h2>A little confession</h2>
+                <p>Sometimes I suddenly smile.</p>
+                <p style="margin-top:1.4rem">People probably think I'm thinking about something funny.</p>
+                <p style="margin-top:1.4rem">The truth is...</p>
+                <p style="margin-top:1rem;font-style:italic;color:#e8c080">I was thinking about you.</p>
+            </div>
+            <div class="card" id="card3">
+                <h2>Open this whenever you're sad</h2>
+                <p>Please remember...</p>
+                <p style="margin-top:1.4rem">Someone is quietly wishing for your happiness every single day.</p>
+                <p>You deserve love.<br>You deserve peace.<br>You deserve to smile.</p>
+            </div>
+            <div class="card" id="card4">
+                <h2>A promise</h2>
+                <p>Distance changes where we are.</p>
+                <p style="margin-top:1.4rem">It will never change how much I care about you.</p>
+                <p style="margin-top:1.4rem">I'll always try to protect your heart, even from miles away.</p>
+            </div>
+            <div class="card" id="card5">
+                <h2>One more thing...</h2>
+                <p>No matter how many nights pass...</p>
+                <p style="margin-top:1.4rem">No matter how many stars appear...</p>
+                <p style="margin-top:1.4rem;color:#e8c080">You'll always be my favorite one.</p>
+            </div>
+        </div>
 
-<details>
-<summary>🥹 یه اعتراف</summary>
-<div class="detailsText">
-شاید همیشه نگم،
-ولی خیلی وقت‌ها وسط روز
-بی‌هوا یادت می‌افتم...
-بعد ناخودآگاه لبخند می‌زنم.
-</div>
-</details>
+        <!-- Final Surprise -->
+        <div class="final-section" id="final-section">
+            <button class="final-btn" id="final-btn">Final Surprise ❤️</button>
+            <div class="message" id="final-message"></div>
+        </div>
+    </div>
 
-<details>
-<summary>🤍 وقتی ناراحتی بازش کن</summary>
-<div class="detailsText">
-هر اتفاقی که افتاده باشه،
-یادت نره که
-برای من همیشه همون دختر کوچولوی دوست‌داشتنی‌ای
-که آرزو می‌کنم همیشه حال دلش خوب باشه.
-</div>
-</details>
+    <!-- Secret Modal -->
+    <div class="modal" id="secret-modal">
+        <div class="modal-content">
+            <h2 style="color:var(--gold);margin-bottom:1.5rem">Congratulations ✨</h2>
+            <p style="font-size:1.35rem;line-height:1.85;color:var(--silver)">
+                You found the hidden message.<br><br>
+                There is something I don't say enough...<br><br>
+                I'm grateful that you exist.<br>
+                Thank you for making my world brighter.
+            </p>
+            <button onclick="closeModal()" style="margin-top:2rem;padding:0.9rem 3rem;background:var(--gold);color:#050a1a;border:none;border-radius:50px;font-size:1.1rem;cursor:pointer">Close with love ❤️</button>
+        </div>
+    </div>
 
-<details>
-<summary>🌙 یه قول</summary>
-<div class="detailsText">
-قول میدم تا وقتی کنار همیم،
-همیشه سعی کنم دلیل لبخندت باشم...
-حتی از کیلومترها دورتر.
-</div>
-</details>
+    <div class="cursor-trail" id="cursor-trail"></div>
 
-<button onclick="showLove()">
-❤️ آخرین سورپرایز
-</button>
+    <script>
+        // Canvas Background
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+        let stars = [], shootingStars = [], w, h;
 
-<div id="final">
-I love you so much... 🤍<br><br>
-الهی فدای خنده‌هات شم.<br>
-الهی فدای قلب مهربونت شم.<br>
-الهی فدای چشمای قشنگت شم.<br><br>
+        function resize() {
+            w = window.innerWidth; h = window.innerHeight;
+            canvas.width = w; canvas.height = h;
+        }
 
-تو واقعاً یکی از قشنگ‌ترین اتفاق‌های زندگی منی. 🌹
-</div>
+        class Star {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h * 0.8;
+                this.size = Math.random() * 2.4 + 0.7;
+                this.twinkle = Math.random() * Math.PI * 2;
+                this.speed = Math.random() * 0.07 + 0.025;
+            }
+            update() {
+                this.twinkle += this.speed;
+            }
+            draw() {
+                const alpha = 0.5 + Math.sin(this.twinkle) * 0.5;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = this.size > 1.8 ? 15 : 6;
+                ctx.shadowColor = '#f0d8a0';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
 
-<script>
-function showLove(){
-document.getElementById("final").style.display="block";
-}
+        class ShootingStar {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * w * 0.7;
+                this.y = Math.random() * h * 0.35;
+                this.len = Math.random() * 90 + 65;
+                this.speed = Math.random() * 22 + 14;
+                this.opacity = 1;
+                this.angle = Math.PI/4 + (Math.random()-0.5)*0.7;
+                this.active = true;
+            }
+            update() {
+                if (!this.active) return;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+                this.opacity -= 0.022;
+                if (this.opacity <= 0) this.active = false;
+            }
+            draw() {
+                if (!this.active) return;
+                ctx.save();
+                ctx.strokeStyle = `rgba(255, 245, 220, ${this.opacity})`;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = '#ffe9b0';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - Math.cos(this.angle)*this.len, this.y - Math.sin(this.angle)*this.len);
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
 
-function createHeart(){
-const heart=document.createElement("div");
-heart.className="heart";
-heart.innerHTML=Math.random()>0.5?"🤍":"💖";
-heart.style.left=Math.random()*100+"vw";
-heart.style.animationDuration=(Math.random()*4+4)+"s";
-document.body.appendChild(heart);
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 680; i++) stars.push(new Star());
+        }
 
-setTimeout(()=>{
-heart.remove();
-},8000);
-}
+        function animate() {
+            ctx.fillStyle = 'rgba(5,10,26,0.28)';
+            ctx.fillRect(0, 0, w, h);
 
-setInterval(createHeart,300);
-</script>
+            stars.forEach(s => { s.update(); s.draw(); });
+            
+            for (let i = shootingStars.length-1; i >= 0; i--) {
+                shootingStars[i].update();
+                shootingStars[i].draw();
+                if (!shootingStars[i].active) shootingStars.splice(i,1);
+            }
+            requestAnimationFrame(animate);
+        }
 
+        // Typing
+        function typeWriter(el, txt, speed=50) {
+            let i = 0;
+            el.innerHTML = '';
+            const int = setInterval(() => {
+                if (i < txt.length) {
+                    el.innerHTML += txt[i];
+                    i++;
+                } else clearInterval(int);
+            }, speed);
+        }
+
+        // Hearts
+        function spawnHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = Math.random() > 0.5 ? '🤍' : '💞';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (7 + Math.random() * 6) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 16000);
+        }
+
+        // Cursor
+        const trail = document.getElementById('cursor-trail');
+        document.addEventListener('mousemove', e => {
+            trail.style.left = (e.clientX - 11) + 'px';
+            trail.style.top = (e.clientY - 11) + 'px';
+            trail.style.opacity = '0.75';
+        });
+
+        // Moon Easter Egg
+        let moonClicks = 0;
+        document.getElementById('moon').addEventListener('click', () => {
+            moonClicks++;
+            if (moonClicks >= 5) {
+                document.getElementById('secret-modal').style.display = 'flex';
+                moonClicks = 0;
+            }
+        });
+
+        function closeModal() {
+            document.getElementById('secret-modal').style.display = 'none';
+        }
+
+        // Interactions
+        function revealLetters() {
+            const intro = document.getElementById('intro');
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                const letters = document.getElementById('letters-section');
+                letters.style.display = 'flex';
+                
+                document.querySelectorAll('.card').forEach((c,i) => {
+                    setTimeout(() => c.classList.add('visible'), 200 + i*180);
+                });
+            }, 1100);
+        }
+
+        function showFinal() {
+            const btn = document.getElementById('final-btn');
+            btn.style.opacity = '0';
+            setTimeout(() => {
+                btn.style.display = 'none';
+                const msg = document.getElementById('final-message');
+                msg.innerHTML = `If I could wish for only one thing...<br><br>
+                It would simply be<br>
+                <span style="font-size:2.3rem;color:#e8c080">one day</span><br>
+                looking at this same sky<br>
+                standing beside you.<br><br>
+                Until then...<br><br>
+                Whenever you look at the stars...<br>
+                remember that somewhere<br>
+                I'm probably looking at them too.<br><br>
+                <span style="font-size:2.6rem;color:#e8c080">I love you.</span><br>Forever.<br>🤍`;
+                msg.style.opacity = '1';
+                canvas.style.filter = 'brightness(1.4) saturate(1.15)';
+            }, 800);
+        }
+
+        // Init
+        window.onload = () => {
+            resize();
+            initStars();
+            animate();
+
+            setInterval(() => { if (Math.random() < 0.55) shootingStars.push(new ShootingStar()); }, 750);
+            setInterval(spawnHeart, 380);
+
+            const intro = document.getElementById('intro');
+            setTimeout(() => {
+                intro.classList.add('visible');
+                typeWriter(document.getElementById('typing-text'), "Every star reminds me of you.");
+            }, 650);
+
+            document.getElementById('open-btn').addEventListener('click', revealLetters);
+            document.getElementById('final-btn').addEventListener('click', showFinal);
+
+            setTimeout(() => {
+                document.getElementById('final-section').style.display = 'block';
+            }, 7200);
+
+            window.addEventListener('resize', () => { resize(); initStars(); });
+        };
+    </script>
 </body>
 </html>
