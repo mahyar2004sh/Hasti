@@ -10,8 +10,8 @@
         :root {
             --navy: #0a1428;
             --deep-navy: #050a1a;
-            --soft-white: #f8f9ff;
-            --silver: #c0c8e0;
+            --soft-white: #f0f4ff;
+            --silver: #b8c5e8;
             --gold: #e8c080;
         }
 
@@ -48,7 +48,7 @@
             font-family: 'Playfair Display', serif;
             font-size: clamp(2.8rem, 9vw, 5.4rem);
             margin-bottom: 0.8rem;
-            text-shadow: 0 0 60px rgba(232, 192, 128, 0.75);
+            text-shadow: 0 0 50px rgba(232, 192, 128, 0.9), 0 4px 20px rgba(0,0,0,0.8);
         }
 
         .subtitle {
@@ -56,6 +56,7 @@
             margin-bottom: 3.5rem;
             color: var(--silver);
             font-weight: 300;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.7);
         }
 
         .open-btn {
@@ -91,9 +92,9 @@
         }
 
         .card {
-            background: rgba(8, 18, 42, 0.82);
-            backdrop-filter: blur(26px);
-            border: 1px solid rgba(200, 215, 245, 0.25);
+            background: rgba(8, 18, 42, 0.85);
+            backdrop-filter: blur(28px);
+            border: 1px solid rgba(200, 215, 245, 0.3);
             border-radius: 28px;
             padding: 2.8rem 2.3rem;
             width: 100%;
@@ -101,7 +102,7 @@
             opacity: 0;
             transform: translateY(50px);
             transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: 0 30px 70px -15px rgba(0,0,0,0.65);
+            box-shadow: 0 30px 70px -15px rgba(0,0,0,0.7);
         }
 
         .card.visible { opacity: 1; transform: translateY(0); }
@@ -111,12 +112,14 @@
             font-size: 1.9rem;
             margin-bottom: 1.7rem;
             color: var(--gold);
+            text-shadow: 0 0 20px rgba(232, 192, 128, 0.6);
         }
 
         .card p {
             line-height: 1.85;
-            color: var(--silver);
+            color: #d0d8f0;
             font-size: 1.1rem;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.6);
         }
 
         .moon {
@@ -137,12 +140,7 @@
         }
 
         @media (max-width: 768px) {
-            .moon { 
-                width: 82px; 
-                height: 82px; 
-                top: 6%; 
-                left: 6%; 
-            }
+            .moon { width: 82px; height: 82px; top: 6%; left: 6%; }
         }
 
         .final-section {
@@ -174,17 +172,7 @@
             opacity: 0;
             transition: opacity 2.2s ease;
             margin-top: 2.5rem;
-        }
-
-        .music-btn {
-            margin-top: 2rem;
-            padding: 0.85rem 2.4rem;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            border-radius: 50px;
-            font-size: 1.05rem;
-            cursor: pointer;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.8);
         }
     </style>
 </head>
@@ -239,7 +227,6 @@
         <div class="final-section" id="final-section">
             <button class="final-btn" id="final-btn">Final Surprise ❤️</button>
             <div class="message" id="final-message"></div>
-            <button class="music-btn" id="music-btn">♪ Play Our Song</button>
         </div>
     </div>
 
@@ -255,8 +242,7 @@
     <script>
         const canvas = document.getElementById('stars');
         const ctx = canvas.getContext('2d');
-        let stars = [], shootingStars = [], particles = [], w, h;
-        let audio, isPlaying = false;
+        let stars = [], shootingStars = [], galaxies = [], particles = [], w, h;
 
         function resize() {
             w = window.innerWidth; h = window.innerHeight;
@@ -267,19 +253,19 @@
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * w;
-                this.y = Math.random() * h * 0.8;
-                this.size = Math.random() * 2.6 + 0.7;
-                this.twinkleSpeed = Math.random() * 0.12 + 0.035;
+                this.y = Math.random() * h * 0.85;
+                this.size = Math.random() * 1.8 + 0.5;
+                this.twinkleSpeed = Math.random() * 0.1 + 0.03;
                 this.twinkle = Math.random() * Math.PI * 2;
             }
             update() { this.twinkle += this.twinkleSpeed; }
             draw() {
-                const alpha = 0.45 + Math.sin(this.twinkle) * 0.55;
+                const alpha = 0.5 + Math.sin(this.twinkle) * 0.45;
                 ctx.save();
                 ctx.globalAlpha = alpha;
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = '#f0e0b0';
-                ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = '#c0d0ff';
+                ctx.fillStyle = '#e0e8ff';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
                 ctx.fill();
@@ -287,7 +273,29 @@
             }
         }
 
-        class ShootingStar {
+        class Galaxy {
+            constructor() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h * 0.6;
+                this.size = Math.random() * 180 + 120;
+                this.opacity = Math.random() * 0.12 + 0.06;
+                this.hue = 230 + Math.random() * 40;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                const grad = ctx.createRadialGradient(this.x, this.y, 20, this.x, this.y, this.size);
+                grad.addColorStop(0, `hsla(${this.hue}, 70%, 60%, 0.6)`);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y, this.size, this.size * 0.6, Math.random() * 0.8, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class ShootingStar { /* same as before */ 
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * w * 0.8;
@@ -308,10 +316,10 @@
             draw() {
                 if (!this.active) return;
                 ctx.save();
-                ctx.strokeStyle = `rgba(255, 248, 220, ${this.opacity})`;
+                ctx.strokeStyle = `rgba(220, 240, 255, ${this.opacity})`;
                 ctx.lineWidth = 3.5;
                 ctx.shadowBlur = 35;
-                ctx.shadowColor = '#fff8c0';
+                ctx.shadowColor = '#c0e0ff';
                 ctx.beginPath();
                 ctx.moveTo(this.x, this.y);
                 ctx.lineTo(this.x - Math.cos(this.angle) * this.len, this.y - Math.sin(this.angle) * this.len);
@@ -320,40 +328,45 @@
             }
         }
 
-        class Particle {
+        class Particle { /* sparkle */ 
             constructor(x, y) {
                 this.x = x; this.y = y;
-                this.size = Math.random() * 3 + 1.5;
+                this.size = Math.random() * 2.5 + 1;
                 this.speedX = Math.random() * 2 - 1;
-                this.speedY = Math.random() * 2 - 2;
-                this.life = 55;
+                this.speedY = Math.random() * 2 - 2.5;
+                this.life = 50;
             }
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
                 this.life--;
-                this.size *= 0.96;
+                this.size *= 0.95;
             }
             draw() {
                 ctx.save();
-                ctx.globalAlpha = this.life / 55;
-                ctx.fillStyle = '#ffe8a0';
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#ffe8a0';
+                ctx.globalAlpha = this.life / 50;
+                ctx.fillStyle = '#e0f0ff';
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#c0d8ff';
                 ctx.fillRect(this.x, this.y, this.size, this.size);
                 ctx.restore();
             }
         }
 
-        function initStars() {
+        function initBackground() {
             stars = [];
-            for (let i = 0; i < 720; i++) stars.push(new Star());
+            galaxies = [];
+            for (let i = 0; i < 680; i++) stars.push(new Star());
+            for (let i = 0; i < 5; i++) galaxies.push(new Galaxy());
         }
 
         function animate() {
-            ctx.fillStyle = 'rgba(5, 10, 26, 0.25)';
+            ctx.fillStyle = 'rgba(5, 10, 26, 0.3)';
             ctx.fillRect(0, 0, w, h);
+
+            galaxies.forEach(g => g.draw());
             stars.forEach(s => { s.update(); s.draw(); });
+
             for (let i = shootingStars.length - 1; i >= 0; i--) {
                 shootingStars[i].update();
                 shootingStars[i].draw();
@@ -377,30 +390,15 @@
         }
 
         function createSparkle(x, y) {
-            for (let i = 0; i < 6; i++) particles.push(new Particle(x, y));
-        }
-
-        function toggleMusic() {
-            if (!audio) {
-                // Can't Help Falling in Love - Elvis Presley (instrumental/karaoke version)
-                audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'); // Replace this URL with a better instrumental if you find one
-                audio.loop = true;
-            }
-            isPlaying = !isPlaying;
-            if (isPlaying) {
-                audio.play().catch(() => console.log("Audio playback prevented by browser"));
-            } else {
-                audio.pause();
-            }
-            document.getElementById('music-btn').textContent = isPlaying ? '⏸ Pause Music' : '♪ Play Our Song';
+            for (let i = 0; i < 5; i++) particles.push(new Particle(x, y));
         }
 
         window.onload = () => {
             resize();
-            initStars();
+            initBackground();
             animate();
 
-            setInterval(() => { if (Math.random() < 0.6) shootingStars.push(new ShootingStar()); }, 680);
+            setInterval(() => { if (Math.random() < 0.55) shootingStars.push(new ShootingStar()); }, 720);
 
             document.addEventListener('mousemove', e => {
                 createSparkle(e.clientX, e.clientY);
@@ -436,11 +434,9 @@
                     const msg = document.getElementById('final-message');
                     msg.innerHTML = `If I could wish for only one thing...<br><br>It would simply be<br><span style="font-size:2.4rem;color:#e8c080">one day</span><br>looking at this same sky<br>standing beside you.<br><br>Until then...<br><br>Whenever you look at the stars...<br>remember that somewhere<br>I'm probably looking at them too.<br><br><span style="font-size:2.7rem;color:#e8c080">I love you.</span><br>Forever.<br>🤍`;
                     msg.style.opacity = '1';
-                    canvas.style.filter = 'brightness(1.45) saturate(1.2)';
+                    canvas.style.filter = 'brightness(1.4) saturate(1.15)';
                 }, 900);
             });
-
-            document.getElementById('music-btn').addEventListener('click', toggleMusic);
 
             let clicks = 0;
             document.getElementById('moon').addEventListener('click', () => {
@@ -452,7 +448,7 @@
             });
 
             setTimeout(() => document.getElementById('final-section').style.display = 'block', 7500);
-            window.addEventListener('resize', () => { resize(); initStars(); });
+            window.addEventListener('resize', () => { resize(); initBackground(); });
         };
     </script>
 </body>
